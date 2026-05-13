@@ -45,17 +45,22 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    foc/core/device.c
+    foc/core/driver.c
     foc/lib/foc.c
     foc/lib/foc_math.c
     foc/lib/foc_pi.c
+    Bsp/bsp_encoder.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    foc/core
     foc/lib
     foc/hal
-    app
+    App
+    Bsp
 )
 
 # Add project symbols (macros)

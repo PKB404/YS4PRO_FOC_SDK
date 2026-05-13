@@ -19,9 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "stm32f407xx.h"
-#include "stm32f4xx_hal_adc.h"
-#include "stm32f4xx_hal_conf.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -95,6 +93,7 @@ int main(void)
   MX_TIM1_Init();
   MX_USART1_UART_Init();
   MX_ADC3_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
