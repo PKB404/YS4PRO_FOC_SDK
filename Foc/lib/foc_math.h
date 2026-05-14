@@ -16,7 +16,7 @@
 #include "foc_types.h"
 /*---------- macro ----------*/
 #define FOC_ONE_BY_SQRT3 (0.57735026918962576451f)
-#define FOC_SQRT3_BY_2   (0.86602540378443864676f)
+#define FOC_SQRT3_BY_2 (0.86602540378443864676f)
 /*---------- type define ----------*/
 
 // 因为这里的transform中不需要c相，所以不定义c，c可以通过a和b计算得到

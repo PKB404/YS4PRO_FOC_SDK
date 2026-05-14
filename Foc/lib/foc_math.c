@@ -20,8 +20,7 @@ static foc_scalar_t _foc_clamp_unit(foc_scalar_t value);
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-static foc_scalar_t _foc_clamp_unit(foc_scalar_t value)
-{
+static foc_scalar_t _foc_clamp_unit(foc_scalar_t value) {
     if (value < 0.0f) {
         return 0.0f;
     }
@@ -32,8 +31,7 @@ static foc_scalar_t _foc_clamp_unit(foc_scalar_t value)
     return value;
 }
 
-foc_angle_t foc_wrap_angle_deg(foc_angle_t angle_deg)
-{
+foc_angle_t foc_wrap_angle_deg(foc_angle_t angle_deg) {
     while (angle_deg >= 360.0f) {
         angle_deg -= 360.0f;
     }
@@ -44,8 +42,7 @@ foc_angle_t foc_wrap_angle_deg(foc_angle_t angle_deg)
     return angle_deg;
 }
 
-void foc_clarke(struct foc_ab *out, const struct foc_abc *in)
-{
+void foc_clarke(struct foc_ab *out, const struct foc_abc *in) {
     if ((out == NULL) || (in == NULL)) {
         return;
     }
@@ -54,8 +51,7 @@ void foc_clarke(struct foc_ab *out, const struct foc_abc *in)
     out->beta = (in->a + (2.0f * in->b)) * FOC_ONE_BY_SQRT3;
 }
 
-void foc_park(struct foc_dq *out, const struct foc_ab *in, foc_angle_t angle_deg)
-{
+void foc_park(struct foc_dq *out, const struct foc_ab *in, foc_angle_t angle_deg) {
     foc_scalar_t rad = 0.0f;
     foc_scalar_t sin_val = 0.0f;
     foc_scalar_t cos_val = 0.0f;
@@ -72,8 +68,7 @@ void foc_park(struct foc_dq *out, const struct foc_ab *in, foc_angle_t angle_deg
     out->q = (-in->alpha * sin_val) + (in->beta * cos_val);
 }
 
-void foc_inv_park(struct foc_ab *out, const struct foc_dq *in, foc_angle_t angle_deg)
-{
+void foc_inv_park(struct foc_ab *out, const struct foc_dq *in, foc_angle_t angle_deg) {
     foc_scalar_t rad = 0.0f;
     foc_scalar_t sin_val = 0.0f;
     foc_scalar_t cos_val = 0.0f;
@@ -90,8 +85,7 @@ void foc_inv_park(struct foc_ab *out, const struct foc_dq *in, foc_angle_t angle
     out->beta = (in->d * sin_val) + (in->q * cos_val);
 }
 
-void foc_svpwm(struct foc_pwm_out *out, const struct foc_ab *voltage_ab)
-{
+void foc_svpwm(struct foc_pwm_out *out, const struct foc_ab *voltage_ab) {
     foc_scalar_t x = 0.0f;
     foc_scalar_t y = 0.0f;
     foc_scalar_t z = 0.0f;
@@ -130,34 +124,34 @@ void foc_svpwm(struct foc_pwm_out *out, const struct foc_ab *voltage_ab)
     sector = (uint8_t)((c << 2U) | (b << 1U) | a);
 
     switch (sector) {
-        case 3U:
-            t1 = -z;
-            t2 = x;
-            break;
-        case 1U:
-            t1 = z;
-            t2 = y;
-            break;
-        case 5U:
-            t1 = x;
-            t2 = -y;
-            break;
-        case 4U:
-            t1 = -x;
-            t2 = z;
-            break;
-        case 6U:
-            t1 = -y;
-            t2 = -z;
-            break;
-        case 2U:
-            t1 = y;
-            t2 = -x;
-            break;
-        default:
-            t1 = 0.0f;
-            t2 = 0.0f;
-            break;
+    case 3U:
+        t1 = -z;
+        t2 = x;
+        break;
+    case 1U:
+        t1 = z;
+        t2 = y;
+        break;
+    case 5U:
+        t1 = x;
+        t2 = -y;
+        break;
+    case 4U:
+        t1 = -x;
+        t2 = z;
+        break;
+    case 6U:
+        t1 = -y;
+        t2 = -z;
+        break;
+    case 2U:
+        t1 = y;
+        t2 = -x;
+        break;
+    default:
+        t1 = 0.0f;
+        t2 = 0.0f;
+        break;
     }
 
     sumt = t1 + t2;
@@ -176,41 +170,41 @@ void foc_svpwm(struct foc_pwm_out *out, const struct foc_ab *voltage_ab)
     dc = 1.0f - (2.0f * tc);
 
     switch (sector) {
-        case 3U:
-            out->duty_a = da;
-            out->duty_b = db;
-            out->duty_c = dc;
-            break;
-        case 1U:
-            out->duty_a = db;
-            out->duty_b = da;
-            out->duty_c = dc;
-            break;
-        case 5U:
-            out->duty_a = dc;
-            out->duty_b = da;
-            out->duty_c = db;
-            break;
-        case 4U:
-            out->duty_a = dc;
-            out->duty_b = db;
-            out->duty_c = da;
-            break;
-        case 6U:
-            out->duty_a = db;
-            out->duty_b = dc;
-            out->duty_c = da;
-            break;
-        case 2U:
-            out->duty_a = da;
-            out->duty_b = dc;
-            out->duty_c = db;
-            break;
-        default:
-            out->duty_a = 0.5f;
-            out->duty_b = 0.5f;
-            out->duty_c = 0.5f;
-            break;
+    case 3U:
+        out->duty_a = da;
+        out->duty_b = db;
+        out->duty_c = dc;
+        break;
+    case 1U:
+        out->duty_a = db;
+        out->duty_b = da;
+        out->duty_c = dc;
+        break;
+    case 5U:
+        out->duty_a = dc;
+        out->duty_b = da;
+        out->duty_c = db;
+        break;
+    case 4U:
+        out->duty_a = dc;
+        out->duty_b = db;
+        out->duty_c = da;
+        break;
+    case 6U:
+        out->duty_a = db;
+        out->duty_b = dc;
+        out->duty_c = da;
+        break;
+    case 2U:
+        out->duty_a = da;
+        out->duty_b = dc;
+        out->duty_c = db;
+        break;
+    default:
+        out->duty_a = 0.5f;
+        out->duty_b = 0.5f;
+        out->duty_c = 0.5f;
+        break;
     }
 
     out->duty_a = _foc_clamp_unit(out->duty_a);

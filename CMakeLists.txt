@@ -45,22 +45,29 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    foc/core/device.c
-    foc/core/driver.c
-    foc/lib/foc.c
-    foc/lib/foc_math.c
-    foc/lib/foc_pi.c
+    Foc/lib/foc.c
+    Foc/lib/foc_math.c
+    Foc/lib/foc_pi.c
+
+    Board/board.c
+
     Bsp/bsp_encoder.c
+    Bsp/bsp_spi.c
+
+    Device/mt6701_sensor.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
-    foc/core
-    foc/lib
-    foc/hal
+    Foc/inc
+    Foc/lib
+    Foc/hal
+
     App
+    Board
     Bsp
+    Device
 )
 
 # Add project symbols (macros)

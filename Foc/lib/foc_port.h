@@ -12,9 +12,9 @@
 #define __FOC_PORT_H__
 
 /*---------- includes ----------*/
+#include "foc_types.h"
 #include <stdbool.h>
 #include <stdint.h>
-#include "foc_types.h"
 /*---------- macro ----------*/
 /*---------- type define ----------*/
 struct foc_fast_sample {

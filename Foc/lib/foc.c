@@ -36,8 +36,7 @@ static foc_angle_t _foc_mech_to_electrical_deg(const struct foc_motor *motor, fo
 /*---------- function prototype ----------*/
 /*---------- variable ----------*/
 /*---------- function ----------*/
-static bool _foc_config_valid(const struct foc_config *config, const struct foc_port *port)
-{
+static bool _foc_config_valid(const struct foc_config *config, const struct foc_port *port) {
     if ((config == NULL) || (port == NULL)) {
         return false;
     }
@@ -60,8 +59,7 @@ static bool _foc_config_valid(const struct foc_config *config, const struct foc_
     return true;
 }
 
-static foc_scalar_t _foc_clamp(float value, float min_value, float max_value)
-{
+static foc_scalar_t _foc_clamp(float value, float min_value, float max_value) {
     if (value < min_value) {
         return min_value;
     }
@@ -72,8 +70,7 @@ static foc_scalar_t _foc_clamp(float value, float min_value, float max_value)
     return value;
 }
 
-static foc_angle_t _foc_mech_to_electrical_deg(const struct foc_motor *motor, foc_angle_t mechanical_angle_deg)
-{
+static foc_angle_t _foc_mech_to_electrical_deg(const struct foc_motor *motor, foc_angle_t mechanical_angle_deg) {
     foc_angle_t electrical_angle_deg = 0.0f;
     uint8_t pole_pairs = motor->cfg->motor.pole_pairs;
     int8_t angle_direction = motor->cfg->motor.angle_direction;
@@ -86,8 +83,7 @@ static foc_angle_t _foc_mech_to_electrical_deg(const struct foc_motor *motor, fo
     return foc_wrap_angle_deg(electrical_angle_deg);
 }
 
-bool foc_init(struct foc_motor *motor, const struct foc_config *config, const struct foc_port *port, void *port_ctx)
-{
+bool foc_init(struct foc_motor *motor, const struct foc_config *config, const struct foc_port *port, void *port_ctx) {
     if ((motor == NULL) || !_foc_config_valid(config, port)) {
         if (motor != NULL) {
             memset(motor, 0, sizeof(*motor));
@@ -115,8 +111,7 @@ bool foc_init(struct foc_motor *motor, const struct foc_config *config, const st
  * @param {foc_motor} *motor
  * @return {*}
  */
-void foc_command_disable(struct foc_motor *motor)
-{
+void foc_command_disable(struct foc_motor *motor) {
     if (motor == NULL || motor->port == NULL || motor->port->write_pwm == NULL) {
         return;
     }
@@ -145,8 +140,7 @@ void foc_command_disable(struct foc_motor *motor)
  * @param {foc_scalar_t} iq_pu
  * @return {*}
  */
-void foc_command_current(struct foc_motor *motor, foc_scalar_t id_pu, foc_scalar_t iq_pu)
-{
+void foc_command_current(struct foc_motor *motor, foc_scalar_t id_pu, foc_scalar_t iq_pu) {
     if (motor == NULL || motor->port == NULL) {
         return;
     }
@@ -168,8 +162,7 @@ void foc_command_current(struct foc_motor *motor, foc_scalar_t id_pu, foc_scalar
  * @param {foc_scalar_t} speed_ref
  * @return {*}
  */
-void foc_command_speed(struct foc_motor *motor, foc_scalar_t speed_ref)
-{
+void foc_command_speed(struct foc_motor *motor, foc_scalar_t speed_ref) {
     foc_scalar_t speed_limit = 0.0f;
 
     if (motor == NULL || motor->port == NULL) {
@@ -189,8 +182,7 @@ void foc_command_speed(struct foc_motor *motor, foc_scalar_t speed_ref)
  * @param {foc_motor} *motor
  * @return {*}
  */
-void foc_command_align(struct foc_motor *motor)
-{
+void foc_command_align(struct foc_motor *motor) {
     if ((motor == NULL) || (motor->cfg == NULL)) {
         return;
     }
@@ -209,9 +201,8 @@ void foc_command_align(struct foc_motor *motor)
  * @param {foc_motor} *motor
  * @return {*}
  */
-bool foc_run_fast(struct foc_motor *motor)
-{
-    struct foc_frame frame = { 0 };
+bool foc_run_fast(struct foc_motor *motor) {
+    struct foc_frame frame = {0};
     struct foc_debug_sample *debug_sample = NULL;
     struct foc_align_state *align = NULL;
     foc_angle_t mechanical_angle_deg = 0.0f;
@@ -229,8 +220,8 @@ bool foc_run_fast(struct foc_motor *motor)
     }
 
     /* 停止状态下，进行电流零飘校准 */
-    if ((motor->state.mode == FOC_MODE_STOP) && (motor->state.fault_mask == 0U)
-        && (motor->port->update_current_zero_drift != NULL)) {
+    if ((motor->state.mode == FOC_MODE_STOP) && (motor->state.fault_mask == 0U) &&
+        (motor->port->update_current_zero_drift != NULL)) {
         (void)motor->port->update_current_zero_drift(motor->port_ctx);
     }
 
@@ -260,57 +251,57 @@ bool foc_run_fast(struct foc_motor *motor)
     align = &motor->state.align;
 
     switch (motor->state.mode) {
-        case FOC_MODE_ALIGN:
-            now_ms = motor->port->get_tick_ms(motor->port_ctx);
-            if (motor->state.align.is_started == false) {
-                motor->state.align.is_started = true;
-                align->start_tick_ms = now_ms;
-            }
-            /* 锁轴 */
-            frame.voltage_dq_pu.d = motor->cfg->align.voltage_d_pu;
-            frame.voltage_dq_pu.q = 0.0f;
-            frame.electrical_angle_deg = 0;
-            foc_inv_park(&frame.voltage_ab_pu, &frame.voltage_dq_pu, frame.electrical_angle_deg);
+    case FOC_MODE_ALIGN:
+        now_ms = motor->port->get_tick_ms(motor->port_ctx);
+        if (motor->state.align.is_started == false) {
+            motor->state.align.is_started = true;
+            align->start_tick_ms = now_ms;
+        }
+        /* 锁轴 */
+        frame.voltage_dq_pu.d = motor->cfg->align.voltage_d_pu;
+        frame.voltage_dq_pu.q = 0.0f;
+        frame.electrical_angle_deg = 0;
+        foc_inv_park(&frame.voltage_ab_pu, &frame.voltage_dq_pu, frame.electrical_angle_deg);
 
-            if ((now_ms - align->start_tick_ms) < 200) {
-                motor->state.align.sample_tick_ms = now_ms;
-                break;
-            }
+        if ((now_ms - align->start_tick_ms) < 200) {
+            motor->state.align.sample_tick_ms = now_ms;
+            break;
+        }
 
-            if (now_ms - motor->state.align.sample_tick_ms > 10) {
-                motor->state.align.sample_tick_ms = now_ms;
-                align->sample_count++;
-                align->msum_deg += frame.sample.mech_angle_deg;
-            }
+        if (now_ms - motor->state.align.sample_tick_ms > 10) {
+            motor->state.align.sample_tick_ms = now_ms;
+            align->sample_count++;
+            align->msum_deg += frame.sample.mech_angle_deg;
+        }
 
-            if (align->sample_count == 8) {
-                align->mavg_deg = align->msum_deg / 8;
-                motor->state.electrical_zero_offset_deg = align->mavg_deg;
-                foc_command_disable(motor);
-            }
-            break;
-        case FOC_MODE_STOP:
-            break;
-        case FOC_MODE_CURRENT:
-        case FOC_MODE_SPEED:
-            /* 输入PI控制器 */
-            foc_pi_run(&motor->state.id_pi, motor->state.id_ref_pu, frame.read_dq_pu.d);
-            foc_pi_run(&motor->state.iq_pi, motor->state.iq_ref_pu, frame.read_dq_pu.q);
-            v_back_emf = frame.electrical_speed_deg_pu * motor->cfg->motor.phi_pu;
-            /* PI项+前馈项这里的电流用ref值 */
-            //-w_e*L_q*iq;
-            frame.voltage_dq_pu.d = motor->state.id_pi.output
-                                    - frame.electrical_speed_deg_pu * motor->state.iq_ref_pu * motor->cfg->motor.lq_pu;
-            // w_e*L_d*i_d+w_e*fb;
-            frame.voltage_dq_pu.q = motor->state.iq_pi.output
-                                    + frame.electrical_speed_deg_pu * motor->state.id_ref_pu * motor->cfg->motor.lq_pu
-                                    + frame.electrical_speed_deg_pu * motor->cfg->motor.phi_pu;
-            foc_inv_park(&frame.voltage_ab_pu, &frame.voltage_dq_pu, frame.electrical_angle_deg);
-            break;
-        case FOC_MODE_FAULT:
-            break;
-        default:
-            break;
+        if (align->sample_count == 8) {
+            align->mavg_deg = align->msum_deg / 8;
+            motor->state.electrical_zero_offset_deg = align->mavg_deg;
+            foc_command_disable(motor);
+        }
+        break;
+    case FOC_MODE_STOP:
+        break;
+    case FOC_MODE_CURRENT:
+    case FOC_MODE_SPEED:
+        /* 输入PI控制器 */
+        foc_pi_run(&motor->state.id_pi, motor->state.id_ref_pu, frame.read_dq_pu.d);
+        foc_pi_run(&motor->state.iq_pi, motor->state.iq_ref_pu, frame.read_dq_pu.q);
+        v_back_emf = frame.electrical_speed_deg_pu * motor->cfg->motor.phi_pu;
+        /* PI项+前馈项这里的电流用ref值 */
+        //-w_e*L_q*iq;
+        frame.voltage_dq_pu.d = motor->state.id_pi.output -
+                                frame.electrical_speed_deg_pu * motor->state.iq_ref_pu * motor->cfg->motor.lq_pu;
+        // w_e*L_d*i_d+w_e*fb;
+        frame.voltage_dq_pu.q = motor->state.iq_pi.output +
+                                frame.electrical_speed_deg_pu * motor->state.id_ref_pu * motor->cfg->motor.lq_pu +
+                                frame.electrical_speed_deg_pu * motor->cfg->motor.phi_pu;
+        foc_inv_park(&frame.voltage_ab_pu, &frame.voltage_dq_pu, frame.electrical_angle_deg);
+        break;
+    case FOC_MODE_FAULT:
+        break;
+    default:
+        break;
     }
 
     foc_svpwm(&frame.pwm, &frame.voltage_ab_pu);
@@ -342,8 +333,7 @@ bool foc_run_fast(struct foc_motor *motor)
     return true;
 }
 
-void foc_run_slow(struct foc_motor *motor, uint32_t now_ms)
-{
+void foc_run_slow(struct foc_motor *motor, uint32_t now_ms) {
     (void)motor;
     (void)now_ms;
 }
