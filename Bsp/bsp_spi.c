@@ -2,6 +2,7 @@
 #include "spi.h"
 #include "stm32f407xx.h"
 #include "stm32f4xx_hal_gpio.h"
+#include "board.h"
 
 #define SPI1_CS_Pin GPIO_PIN_15
 #define SPI1_CS_GPIO_Port GPIOG
@@ -58,12 +59,13 @@ static void _mt6701_cs_ctrl(bool active)
 
 static void _mt6701_delay_us(uint32_t us)
 {
-    // DWT 实现，中断安全
-    uint32_t start = DWT->CYCCNT;
-    uint32_t delay = us * (SystemCoreClock / 1000000U);
-    while ((DWT->CYCCNT - start) < delay);
+    Delay_us(us);
 }
 
+static int _mt6701_xfer(uint8_t *tx, uint8_t *rx, uint16_t len)
+{
+    return (HAL_SPI_TransmitReceive(&hspi1, tx, rx, len, 10) == HAL_OK) ? 0 : -1;
+}
 
 
 
