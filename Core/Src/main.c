@@ -21,12 +21,16 @@
 #include "adc.h"
 #include "gpio.h"
 #include "spi.h"
+#include "stm32f4xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "board.h"
+#include "bsp_encoder.h"
+#include "bsp_spi.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +51,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+bsp_encoder_t *g_enc;
+
+float mech_angle, elec_angle, speed;
 
 /* USER CODE END PV */
 
@@ -61,7 +68,7 @@ void SystemClock_Config(void);
 
 /* USER CODE END 0 */
 
-/**
+/**}
  * @brief  The application entry point.
  * @retval int
  */
@@ -94,13 +101,27 @@ int main(void) {
     MX_ADC3_Init();
     /* USER CODE BEGIN 2 */
     Board_DWT_Init();
+
+    g_enc = bsp_encoder_create(7, false);
+    if (g_enc == NULL) 
+    {
+        Error_Handler();
+    }
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
         /* USER CODE END WHILE */
-
+        bsp_encoder_update(g_enc);
+        mech_angle = bsp_encoder_get_mech_angle(g_enc);
+        elec_angle = bsp_encoder_get_elec_angle(g_enc);
+        speed      = bsp_encoder_get_speed(g_enc);
+        (void)mech_angle;
+        (void)elec_angle;
+        (void)speed;        
+        HAL_Delay(10);
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */

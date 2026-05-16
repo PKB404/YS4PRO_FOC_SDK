@@ -63,8 +63,8 @@ void Error_Handler(void);
 #define AMP_IV_GPIO_Port GPIOF
 #define AMMP_IW_Pin GPIO_PIN_8
 #define AMMP_IW_GPIO_Port GPIOF
-#define SPI1_CS_Pin GPIO_PIN_15
-#define SPI1_CS_GPIO_Port GPIOG
+// #define SPI1_CS_Pin GPIO_PIN_15
+// #define SPI1_CS_GPIO_Port GPIOG
 
 /* USER CODE BEGIN Private defines */
 
