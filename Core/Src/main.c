@@ -115,13 +115,14 @@ int main(void) {
     while (1) {
         /* USER CODE END WHILE */
         bsp_encoder_update(g_enc);
-        mech_angle = bsp_encoder_get_mech_angle(g_enc);
-        elec_angle = bsp_encoder_get_elec_angle(g_enc);
-        speed      = bsp_encoder_get_speed(g_enc);
-        (void)mech_angle;
-        (void)elec_angle;
-        (void)speed;        
-        HAL_Delay(10);
+      
+        float theta_e = bsp_encoder_get_elec_angle(g_enc);
+        float omega_e = bsp_encoder_get_elec_speed(g_enc);
+
+        (void)theta_e;
+        (void)omega_e;
+
+        HAL_Delay(100);
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */

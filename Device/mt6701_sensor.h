@@ -16,13 +16,26 @@
  */
 typedef struct {
     const bsp_spi_t *spi;  /* SPI 接口指针 */
-    uint16_t raw_angle;    /* 最近一次角度 (0 ~ 65535) */
+    float raw_angle;    /* 最近一次角度 (0 ~ 65535) */
     uint8_t  raw_status;   /* 最近一次状态字段 */
 } mt6701_t;
 
+typedef enum
+{
+    mt6701_status_success       = 0,
+    mt6701_status_comm_error    = -1,
+    mt6701_status_crc_error     = -2
+}mt6701_status_t;
+
+
+
+
+
+
 void mt6701_init(mt6701_t *dev, const bsp_spi_t *spidev);
-int  mt6701_read_angle(mt6701_t *dev);   /* 0 成功, 非 0 失败 */
+mt6701_status_t  mt6701_read_angle(mt6701_t *dev);   /* 0 成功, 非 0 失败 */
 
 #endif
+
 
 

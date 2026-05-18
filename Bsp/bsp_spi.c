@@ -54,7 +54,7 @@ static void _mt6701_init(void)
     hspi1.Init.Direction = SPI_DIRECTION_2LINES;
     hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
     hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-    hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+    hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
     hspi1.Init.NSS = SPI_NSS_SOFT;
     hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
     hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -82,7 +82,7 @@ static void _mt6701_delay_us(uint32_t us)
     Delay_us(us);
 }
 
-static int _mt6701_xfer(uint8_t *tx, uint8_t *rx, uint16_t len) 
+static int _mt6701_xfer(uint8_t *rx, uint16_t len) 
 {
     uint8_t dummy[3] = {0x00, 0x00, 0x00};
     return (HAL_SPI_TransmitReceive(&hspi1, dummy, rx, len, 10) == HAL_OK) ? 0 : -1;
