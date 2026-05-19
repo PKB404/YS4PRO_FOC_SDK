@@ -1,29 +1,27 @@
 #include "bsp_spi.h"
+#include "board.h"
 #include "spi.h"
 #include "stm32f407xx.h"
 #include "stm32f4xx_hal_gpio.h"
-#include "board.h"
 #include "stm32f4xx_hal_spi.h"
 
-#define SPI1_CS_Pin             GPIO_PIN_15
-#define SPI1_CS_GPIO_Port       GPIOG
-#define SPI1_SCK_Pin            GPIO_PIN_5
-#define SPI1_SCK_GPIO_Port      GPIOA
-#define SPI1_MISO_Pin           GPIO_PIN_4
-#define SPI1_MISO_GPIO_Port     GPIOB
-#define SPI1_MOSI_Pin           GPIO_PIN_5
-#define SPI1_MOSI_GPIO_Port     GPIOB
-
+#define SPI1_CS_Pin GPIO_PIN_15
+#define SPI1_CS_GPIO_Port GPIOG
+#define SPI1_SCK_Pin GPIO_PIN_5
+#define SPI1_SCK_GPIO_Port GPIOA
+#define SPI1_MISO_Pin GPIO_PIN_4
+#define SPI1_MISO_GPIO_Port GPIOB
+#define SPI1_MOSI_Pin GPIO_PIN_5
+#define SPI1_MOSI_GPIO_Port GPIOB
 
 /*==================== MT6701 编码器 SPI1 ====================*/
 
-static void _mt6701_init(void) 
-{
-        __HAL_RCC_SPI1_CLK_ENABLE();
+static void _mt6701_init(void) {
+    __HAL_RCC_SPI1_CLK_ENABLE();
 
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-        __HAL_RCC_GPIOG_CLK_ENABLE();
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    __HAL_RCC_GPIOG_CLK_ENABLE();
 
     GPIO_InitTypeDef spi1_gpio = {
         .Pin = SPI1_CS_Pin,
@@ -34,7 +32,6 @@ static void _mt6701_init(void)
     // SPI1_CS[Soft CS]
     HAL_GPIO_Init(SPI1_CS_GPIO_Port, &spi1_gpio);
     HAL_GPIO_WritePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin, GPIO_PIN_SET); // 初始拉高
-
 
     spi1_gpio.Pin = SPI1_SCK_Pin;
     spi1_gpio.Mode = GPIO_MODE_AF_PP;
@@ -64,43 +61,24 @@ static void _mt6701_init(void)
     HAL_SPI_Init(&hspi1);
 }
 
-static void _mt6701_deinit(void)
-{
-    HAL_SPI_DeInit(&hspi1);
+static void _mt6701_deinit(void) { HAL_SPI_DeInit(&hspi1); }
 
-}
-
-
-
-static void _mt6701_cs_ctrl(bool active)
-{
+static void _mt6701_cs_ctrl(bool active) {
     HAL_GPIO_WritePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin, active ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
-static void _mt6701_delay_us(uint32_t us)
-{
-    Delay_us(us);
-}
+static void _mt6701_delay_us(uint32_t us) { Delay_us(us); }
 
-static int _mt6701_xfer(uint8_t *rx, uint16_t len) 
-{
+static int _mt6701_xfer(uint8_t *rx, uint16_t len) {
     uint8_t dummy[3] = {0x00, 0x00, 0x00};
     return (HAL_SPI_TransmitReceive(&hspi1, dummy, rx, len, 10) == HAL_OK) ? 0 : -1;
 }
 
 /*---------- 导出 ----------*/
 const bsp_spi_t g_spi_mt6701 = {
-    .init     = _mt6701_init,
-    .deinit   = _mt6701_deinit,
-    .cs_ctrl  = _mt6701_cs_ctrl,
+    .init = _mt6701_init,
+    .deinit = _mt6701_deinit,
+    .cs_ctrl = _mt6701_cs_ctrl,
     .delay_us = _mt6701_delay_us,
-    .xfer     = _mt6701_xfer,
+    .xfer = _mt6701_xfer,
 };
-
-
-
-
-
-
-
-

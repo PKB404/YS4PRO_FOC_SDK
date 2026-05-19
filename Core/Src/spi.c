@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "spi.h"
-#include "stm32f4xx_hal_spi.h"
 
 /* USER CODE BEGIN 0 */
 

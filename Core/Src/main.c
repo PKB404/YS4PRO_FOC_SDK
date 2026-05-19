@@ -21,7 +21,6 @@
 #include "adc.h"
 #include "gpio.h"
 #include "spi.h"
-#include "stm32f4xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 
@@ -68,7 +67,7 @@ void SystemClock_Config(void);
 
 /* USER CODE END 0 */
 
-/**}
+/**
  * @brief  The application entry point.
  * @retval int
  */
@@ -99,14 +98,18 @@ int main(void) {
     MX_TIM1_Init();
     MX_USART1_UART_Init();
     MX_ADC3_Init();
+    // MX_SPI1_Init();
+    MX_TIM7_Init();
     /* USER CODE BEGIN 2 */
     Board_DWT_Init();
-
+    FOC_PWM_Init();
     g_enc = bsp_encoder_create(7, false);
-    if (g_enc == NULL) 
-    {
+    if (g_enc == NULL) {
         Error_Handler();
     }
+
+    
+
 
     /* USER CODE END 2 */
 
@@ -114,15 +117,7 @@ int main(void) {
     /* USER CODE BEGIN WHILE */
     while (1) {
         /* USER CODE END WHILE */
-        bsp_encoder_update(g_enc);
-      
-        float theta_e = bsp_encoder_get_elec_angle(g_enc);
-        float omega_e = bsp_encoder_get_elec_speed(g_enc);
 
-        (void)theta_e;
-        (void)omega_e;
-
-        HAL_Delay(100);
         /* USER CODE BEGIN 3 */
     }
     /* USER CODE END 3 */

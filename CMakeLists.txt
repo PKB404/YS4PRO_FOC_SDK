@@ -48,6 +48,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Foc/lib/foc.c
     Foc/lib/foc_math.c
     Foc/lib/foc_pi.c
+    Foc/lib/foc_test.c
 
     Board/board.c
 
