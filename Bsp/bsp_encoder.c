@@ -28,8 +28,8 @@ struct bsp_encoder {
 
 /* ---------- create / destroy ---------- */
 
-bsp_encoder_t *bsp_encoder_create(uint8_t pole_pairs, bool dir_rev, float period) {
-    bsp_encoder_t *enc = calloc(1, sizeof(bsp_encoder_t));
+Bsp_encoder_t *Bsp_Encoder_Create(uint8_t pole_pairs, bool dir_rev, float period) {
+    Bsp_encoder_t *enc = calloc(1, sizeof(Bsp_encoder_t));
     if (!enc)
         return NULL;
 
@@ -48,13 +48,13 @@ bsp_encoder_t *bsp_encoder_create(uint8_t pole_pairs, bool dir_rev, float period
     return enc;
 }
 
-void bsp_encoder_destroy(bsp_encoder_t *enc) { 
+void Bsp_Encoder_Destroy(Bsp_encoder_t *enc) { 
     free(enc); 
 }
 
 /* ---------- 数据更新 ---------- */
 
-int bsp_encoder_update(bsp_encoder_t *enc) {
+int Bsp_Encoder_Update(Bsp_encoder_t *enc) {
     if (mt6701_read_angle(&enc->dev) != mt6701_status_success)
         return -1;
 
@@ -96,34 +96,39 @@ int bsp_encoder_update(bsp_encoder_t *enc) {
     return 0;
 }
 
-float bsp_encoder_get_mech_angle(bsp_encoder_t *enc) {
+float Bsp_Encoder_Get_Mech_Angle(Bsp_encoder_t *enc) {
     return enc->angle_mech; 
 }
 
-float bsp_encoder_get_elec_angle(bsp_encoder_t *enc) { 
+float Bsp_Encoder_Get_Elec_Angle(Bsp_encoder_t *enc) { 
     return enc->angle_elec; 
 }
 
-float bsp_encoder_get_mech_speed(bsp_encoder_t *enc) { 
+float Bsp_Encoder_Get_Mech_Speed(Bsp_encoder_t *enc) { 
     return enc->speed_mech; 
 }
 
-float bsp_encoder_get_elec_speed(bsp_encoder_t *enc) { 
+float Bsp_Encoder_Get_Elec_Speed(Bsp_encoder_t *enc) { 
     return enc->speed_elec; 
 }
 
 /* ========== 零位校准 ========== */
 
-void bsp_encoder_set_zero(bsp_encoder_t *enc) { 
-    enc->zero_offset = enc->dev.raw_angle; 
+void Bsp_Encoder_Set_Zero(Bsp_encoder_t *enc) { 
+    enc->zero_offset = enc->dev.angle_mech; 
 }
 
 /* ========== 滤波系数 ========== */
 
-void bsp_encoder_set_speed_filter(bsp_encoder_t *enc, float coeff) {
+void Bsp_Encoder_Set_Speed_Filter(Bsp_encoder_t *enc, float coeff) {
     if (coeff < 0.0f)
         coeff = 0.0f;
     if (coeff > 1.0f)
         coeff = 1.0f;
     enc->speed_filter = coeff;
 }
+
+
+
+
+

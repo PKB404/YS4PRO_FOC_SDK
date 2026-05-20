@@ -29,7 +29,7 @@
 #include "board.h"
 #include "bsp_encoder.h"
 #include "bsp_spi.h"
-
+#include "foc_test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,7 +50,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-bsp_encoder_t *g_enc;
+// bsp_encoder_t *g_enc;
 
 float mech_angle, elec_angle, speed;
 
@@ -103,10 +103,9 @@ int main(void) {
     /* USER CODE BEGIN 2 */
     Board_DWT_Init();
     FOC_PWM_Init();
-    g_enc = bsp_encoder_create(7, false);
-    if (g_enc == NULL) {
-        Error_Handler();
-    }
+    // if (g_enc == NULL) {
+    //     Error_Handler();
+    // }
 
     
 

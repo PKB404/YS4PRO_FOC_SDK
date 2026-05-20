@@ -1,8 +1,30 @@
 #include "foc_test.h"
 #include <math.h>
+#include <sys/syslimits.h>
+#include "bsp_encoder.h"
+#include "stm32f407xx.h"
 #include "stm32f4xx_it.h"
 #include "tim.h"
-#include "bsp_encoder.h"
+
+
+
+
+typedef struct {
+    float Kp;           // 比例系数
+    float Ki;           // 积分系数（未乘 dt）
+    float integral;     // 积分累积
+    float out_max;      // 输出限幅上限
+    float out_min;      // 输出限幅下限
+    float dt;           // 控制周期（秒）
+} SpeedPI;
+
+
+Bsp_encoder_t   *g_enc;
+FOC_PWM_t       g_FOC_PWM;
+SpeedPI         g_speed_pi;
+float           g_target_speed_rad_s;
+
+
 
 Clarke_ab_t FOC_Clarke(PhaseCurrents_t *pParam)
 {
@@ -270,29 +292,60 @@ void FOC_PWM_Init(void)
     HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
     HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
 
+    g_enc = Bsp_Encoder_Create(7, false, 0.008);
+
+    g_FOC_PWM.bus_Voltage = 12.0f;
+    g_FOC_PWM.wave_period = 16000;
 }
+
+float Speed_PI_Update(SpeedPI *pPI, float target, float feedback)
+{
+    float error = target - feedback;
+    pPI->integral += error * pPI->dt;
+
+    if (pPI->integral > pPI->out_max)
+        pPI->integral = pPI->out_max;
+    if (pPI->integral < pPI->out_min)
+        pPI->integral = pPI->out_min;
+
+    float output = pPI->Kp * error + pPI->Ki * pPI->integral;
+    if (output > pPI->out_max)
+        output = pPI->out_max;
+    if (output < pPI->out_min)
+        output = pPI->out_min;
+    return output;
+}
+
+
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if(htim->Instance == htim7)
-    {
+    if (htim->Instance == TIM7)
+    {   
+        if (Bsp_Encoder_Update(g_enc) != 0)
+        {
+            return;
+        }
+
+        //机械角度死区
+        float speed_fb = Bsp_Encoder_Get_Elec_Speed(g_enc);
+        if (fabsf(speed_fb) < 0.5f) 
+            speed_fb = 0.0f;
+
+        float ele_angle = Bsp_Encoder_Get_Elec_Angle(g_enc);
+
+        float Vq = Speed_PI_Update(&g_speed_pi, g_target_speed_rad_s, speed_fb);
+
+        g_FOC_PWM.angle_el = ele_angle;
+        g_FOC_PWM.Uqd.d    = 0.0f;
+        g_FOC_PWM.Uqd.q    = Vq;      
+        
+        FOC_Run_SVPWM(&g_FOC_PWM);
 
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

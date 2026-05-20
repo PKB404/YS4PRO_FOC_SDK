@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "bsp_encoder.h"
 
 
 //float类型遵循IEEE754单精度标准：1位符号位+8位指数位+23位尾数位
@@ -52,6 +52,11 @@ typedef struct
     float current_freq;
 
 }FOC_VF_t;
+
+
+extern Bsp_encoder_t   *g_enc;
+
+
 
 Clarke_ab_t FOC_Clarke(PhaseCurrents_t *pParam);
 
