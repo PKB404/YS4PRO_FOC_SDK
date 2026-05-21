@@ -13,17 +13,17 @@ struct bsp_encoder {
     uint8_t pole_pairs;
     bool dir_rev;
 
-    float zero_offset; /* 零位偏移 */
+    float zero_offset;      /* 零位偏移 */
 
     /* 转速计算相关 (由 update 频率决定) */
-    float angle_mech; /* 机械角度 (rad) */
-    float angle_elec; /* 电角度   (rad), 归一化到 [0, 2π) */
-    float speed_mech; /* 机械角速度 (rad/s) */
-    float speed_elec; /* 电角速度   (rad/s) */
+    float angle_mech;       /* 机械角度 (rad) */
+    float angle_elec;       /* 电角度   (rad), 归一化到 [0, 2π) */
+    float speed_mech;       /* 机械角速度 (rad/s) */
+    float speed_elec;       /* 电角速度   (rad/s) */
 
-    float last_angle;    /* 上一拍机械角度 (rad), 算速度用 */
-    float update_period; /* 秒, 由外部设定 */
-    float speed_filter;  /* 低通滤波系数 (0~1), 0=关闭 */
+    float last_angle;       /* 上一拍机械角度 (rad), 算速度用 */
+    float update_period;    /* 秒, 由外部设定 */
+    float speed_filter;     /* 低通滤波系数 (0~1), 0=关闭 */
 };
 
 /* ---------- create / destroy ---------- */
@@ -37,7 +37,7 @@ Bsp_encoder_t *Bsp_Encoder_Create(uint8_t pole_pairs, bool dir_rev, float period
 
     enc->pole_pairs = pole_pairs;
     enc->dir_rev = dir_rev;
-    enc->update_period = period; /* 默认 10 kHz */
+    enc->update_period = period;
     enc->speed_filter = 0.3f;
     enc->zero_offset = 0.0f;
 

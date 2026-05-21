@@ -67,7 +67,7 @@ PhaseCurrents_t FOC_InvClarke(Clarke_ab_t *pParam);
 Clarke_ab_t FOC_InvPark(Park_dq_t *pParam, float angle_el);
 
 
-void FOC_PWM_Init(void);
+void FOC_Init(void);
 
 void FOC_Run_SVPWM(FOC_PWM_t *pFOC_PWM);
 

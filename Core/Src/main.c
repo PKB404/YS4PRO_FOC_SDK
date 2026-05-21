@@ -21,6 +21,7 @@
 #include "adc.h"
 #include "gpio.h"
 #include "spi.h"
+#include "stm32f4xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 
@@ -102,12 +103,7 @@ int main(void) {
     MX_TIM7_Init();
     /* USER CODE BEGIN 2 */
     Board_DWT_Init();
-    FOC_PWM_Init();
-    // if (g_enc == NULL) {
-    //     Error_Handler();
-    // }
-
-    
+    FOC_Init();
 
 
     /* USER CODE END 2 */
@@ -115,6 +111,7 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

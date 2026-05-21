@@ -5,7 +5,7 @@
 #include "stm32f407xx.h"
 #include "stm32f4xx_it.h"
 #include "tim.h"
-
+#include "usart.h"
 
 
 
@@ -23,6 +23,15 @@ Bsp_encoder_t   *g_enc;
 FOC_PWM_t       g_FOC_PWM;
 SpeedPI         g_speed_pi;
 float           g_target_speed_rad_s;
+float           speed_fb;
+float           ele_angle;
+float           vofa_floatdata[4] = {0.0f};
+
+
+static float rpm_to_elec_rad_s(float rpm, uint8_t pole_pairs)
+{
+    return rpm * 0.104719755f * (float)pole_pairs;
+}
 
 
 
@@ -179,7 +188,8 @@ static void VectorActionTime(FOC_PWM_t *pFOC_PWM, uint8_t sector, Clarke_ab_t *p
         case 3:
             T1 = x;
             T2 = -y;
-        
+            break;
+
         case 4:
             T1 = -x;
             T2 = z;
@@ -192,7 +202,12 @@ static void VectorActionTime(FOC_PWM_t *pFOC_PWM, uint8_t sector, Clarke_ab_t *p
         
         case 6:
             T1 = y;
-            T2 = -x;        
+            T2 = -x;  
+            break;    
+
+        default:
+            break;            
+            
     }
     
     //限幅处理
@@ -277,45 +292,73 @@ void FOC_Run_SVPWM(FOC_PWM_t *pFOC_PWM)
     
 }
 
-void FOC_PWM_Init(void)
+
+
+
+void FOC_Init(void)
 {
-//    HAL_TIM_Base_Start_IT(&FOC_DRIVER_TIM);
 
     htim1.Instance->CCR1 = 2625;
     htim1.Instance->CCR2 = 2625;
     htim1.Instance->CCR3 = 2625;
 
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
-    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
-    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
-    HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+    g_speed_pi.Kp       = 0.05f;
+    g_speed_pi.Ki       = 0.5f;
+    g_speed_pi.dt       = 0.001f;
+    g_speed_pi.integral = 0.0f;
+    g_speed_pi.out_max  =  6.5f;   // Vq 上限，与母线电压匹配
+    g_speed_pi.out_min  = -6.5f;
 
-    g_enc = Bsp_Encoder_Create(7, false, 0.008);
 
-    g_FOC_PWM.bus_Voltage = 12.0f;
-    g_FOC_PWM.wave_period = 16000;
+    // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+    // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+    // HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+    // HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+    // HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+    // HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_3);
+    g_target_speed_rad_s = rpm_to_elec_rad_s(1, 7);
+    g_enc = Bsp_Encoder_Create(7, false, 0.001f);
+    HAL_TIM_Base_Start_IT(&htim7);
+    // g_FOC_PWM.bus_Voltage = 12.0f;
+    // g_FOC_PWM.wave_period = 16000;
 }
 
 float Speed_PI_Update(SpeedPI *pPI, float target, float feedback)
 {
     float error = target - feedback;
-    pPI->integral += error * pPI->dt;
 
-    if (pPI->integral > pPI->out_max)
-        pPI->integral = pPI->out_max;
-    if (pPI->integral < pPI->out_min)
-        pPI->integral = pPI->out_min;
-
+    // 1. 先算比例+积分（用旧积分）的"预期输出"
     float output = pPI->Kp * error + pPI->Ki * pPI->integral;
+
+    // 2. 输出限幅
     if (output > pPI->out_max)
         output = pPI->out_max;
-    if (output < pPI->out_min)
+    else if (output < pPI->out_min)
         output = pPI->out_min;
+
+    // 3. 抗积分饱和：只有输出未饱和，或者饱和方向与误差方向相反时才累加积分
+    //    （即：如果输出在正限幅而 error > 0，积分不应该再增加；
+    //           如果输出在负限幅而 error < 0，积分也不应该再减小）
+    if ((output >= pPI->out_max && error > 0) ||
+        (output <= pPI->out_min && error < 0))
+    {
+        // 已饱和，不累加积分（或者只在"反向"累加）
+    }
+    else
+    {
+        pPI->integral += error * pPI->dt;
+    }
+
+    // 4. 积分钳位：钳到 out_max/Ki，确保积分项不会远超输出范围
+    float integral_max = pPI->out_max / pPI->Ki;
+    float integral_min = pPI->out_min / pPI->Ki;
+    if (pPI->integral > integral_max)
+        pPI->integral = integral_max;
+    if (pPI->integral < integral_min)
+        pPI->integral = integral_min;
+
     return output;
 }
-
 
 
 
@@ -329,19 +372,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //机械角度死区
-        float speed_fb = Bsp_Encoder_Get_Elec_Speed(g_enc);
+        speed_fb = Bsp_Encoder_Get_Elec_Speed(g_enc);
         if (fabsf(speed_fb) < 0.5f) 
             speed_fb = 0.0f;
 
-        float ele_angle = Bsp_Encoder_Get_Elec_Angle(g_enc);
-
+        ele_angle = Bsp_Encoder_Get_Elec_Angle(g_enc);
+        // DEBUG_Log("\r\n电角速度:%f", speed_fb);
+        // DEBUG_Log("\r\n电角度:%f", ele_angle);
         float Vq = Speed_PI_Update(&g_speed_pi, g_target_speed_rad_s, speed_fb);
-
-        g_FOC_PWM.angle_el = ele_angle;
-        g_FOC_PWM.Uqd.d    = 0.0f;
-        g_FOC_PWM.Uqd.q    = Vq;      
+        vofa_floatdata[0] = ele_angle;
+        vofa_floatdata[1] = speed_fb;
+        vofa_floatdata[2] = Vq;
+        Vofa_Send_JustFloat(vofa_floatdata, 2);
+        // g_FOC_PWM.angle_el = ele_angle;
+        // g_FOC_PWM.Uqd.d    = 0.0f;
+        // g_FOC_PWM.Uqd.q    = Vq;      
         
-        FOC_Run_SVPWM(&g_FOC_PWM);
+        // FOC_Run_SVPWM(&g_FOC_PWM);
 
     }
     
