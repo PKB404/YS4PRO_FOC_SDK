@@ -55,8 +55,7 @@ typedef struct
 
 
 extern Bsp_encoder_t   *g_enc;
-
-
+extern float            vofa_floatdata[4];
 
 Clarke_ab_t FOC_Clarke(PhaseCurrents_t *pParam);
 
@@ -66,6 +65,9 @@ PhaseCurrents_t FOC_InvClarke(Clarke_ab_t *pParam);
 
 Clarke_ab_t FOC_InvPark(Park_dq_t *pParam, float angle_el);
 
+void FOC_Align_Zero(void);
+
+void FOC_Start_OpenLoop(float vq);
 
 void FOC_Init(void);
 

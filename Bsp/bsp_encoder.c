@@ -77,15 +77,15 @@ int Bsp_Encoder_Update(Bsp_encoder_t *enc) {
     else if (delta < -_PI)
         delta += _2PI;
 
-    /*一阶低通滤波*/
-    float raw_speed = delta / enc->update_period;    /* 瞬时速度 rad/s */
-    if (enc->speed_filter > 0.0f && enc->speed_filter < 1.0f){
-        enc->speed_mech = enc->speed_filter * raw_speed \
-                        + (1.0f - enc->speed_filter) * enc->speed_mech;
-    }
-    else {
-        enc->speed_mech = raw_speed;
-    }
+    // /*一阶低通滤波*/
+    // float raw_speed = delta / enc->update_period;    /* 瞬时速度 rad/s */
+    // if (enc->speed_filter > 0.0f && enc->speed_filter < 1.0f){
+    //     enc->speed_mech = enc->speed_filter * raw_speed \
+    //                     + (1.0f - enc->speed_filter) * enc->speed_mech;
+    // }
+    // else {
+    //     enc->speed_mech = raw_speed;
+    // }
 
     float elec = enc->angle_mech * enc->pole_pairs;
     enc->angle_elec = fmodf(elec, _2PI);                        /* 归一化到 [0, 2π) */
@@ -128,7 +128,11 @@ void Bsp_Encoder_Set_Speed_Filter(Bsp_encoder_t *enc, float coeff) {
     enc->speed_filter = coeff;
 }
 
-
+void Bsp_Encoder_Set_Zero_Offset(Bsp_encoder_t *enc, float offset_deg)
+{
+    if (enc == NULL) return;
+    enc->zero_offset = offset_deg;
+}
 
 
 

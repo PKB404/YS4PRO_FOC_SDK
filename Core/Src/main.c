@@ -54,7 +54,7 @@
 // bsp_encoder_t *g_enc;
 
 float mech_angle, elec_angle, speed;
-
+FOC_PWM_t        FOC_PWM;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,7 +75,8 @@ void SystemClock_Config(void);
 int main(void) {
 
     /* USER CODE BEGIN 1 */
-
+    float elec_angle = 0.0f;                     // 电角度 (rad)
+    float elec_freq = 5.0f;                      // 目标电频率 (Hz)，决定转速
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -104,13 +105,28 @@ int main(void) {
     /* USER CODE BEGIN 2 */
     Board_DWT_Init();
     FOC_Init();
-
-
+    HAL_Delay(200);
+    uint32_t last_tick = DWT->CYCCNT;
+    float dt;
+    // FOC_Align_Zero();
+    // FOC_Start_OpenLoop(0.5f);       // 初始Vq = 0.5V，慢慢加
+    
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
+
+        // elec_angle += 0.017453f;
+        // if (elec_angle >= 6.283185307f) elec_angle -= 6.283185307f;
+        // if (elec_angle < 0.0f) elec_angle += 6.283185307f;
+        // FOC_PWM.angle_el = elec_angle;
+        // FOC_PWM.Uqd.d    = 0.0f;
+        // FOC_PWM.Uqd.q    = 1.2f; 
+        // FOC_PWM.bus_Voltage  = 12.0f;
+        // FOC_PWM.wave_period  = 5250;
+
+        // FOC_Run_SVPWM(&FOC_PWM);
 
         /* USER CODE END WHILE */
 
