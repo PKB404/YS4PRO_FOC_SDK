@@ -40,5 +40,4 @@ void Bsp_Encoder_Set_Speed_Filter(Bsp_encoder_t *enc, float coeff);
 /** 设置零点偏移（单位：度），校准用 */
 void Bsp_Encoder_Set_Zero_Offset(Bsp_encoder_t *enc, float offset_deg);
 
-
 #endif

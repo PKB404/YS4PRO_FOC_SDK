@@ -1,18 +1,15 @@
 #ifndef __FOC_TEST_H__
 #define __FOC_TEST_H__
 
-#include <stdint.h>
-#include <stdbool.h>
 #include "bsp_encoder.h"
+#include <stdbool.h>
+#include <stdint.h>
 
-
-//float类型遵循IEEE754单精度标准：1位符号位+8位指数位+23位尾数位
-#define SQRT_3                      1.73205080757f
-#define _1_DIV_SQRT_3               0.57735026919f
-#define SQRT3_DIV_2                 0.86602540378f
-#define PI_DIV_3                    1.04719755120f      /*60° 弧度制*/
-
-
+// float类型遵循IEEE754单精度标准：1位符号位+8位指数位+23位尾数位
+#define SQRT_3              1.73205080757f
+#define _1_DIV_SQRT_3       0.57735026919f
+#define SQRT3_DIV_2         0.86602540378f
+#define PI_DIV_3            1.04719755120f /*60° 弧度制*/
 
 /* 三相电流/电压瞬时值结构体 */
 typedef struct {
@@ -33,29 +30,26 @@ typedef struct {
     float q;
 } Park_dq_t;
 
-typedef struct
-{
-    PhaseCurrents_t     Uabc;
-    PhaseCurrents_t     Tabc;
-    Clarke_ab_t         Ualpha_beta;
-    Park_dq_t           Uqd;
-    
-    float               angle_el;
-    float               bus_Voltage;
-    uint32_t            wave_period;
-    
-}FOC_PWM_t;
+typedef struct {
+    PhaseCurrents_t Uabc;
+    PhaseCurrents_t Tabc;
+    Clarke_ab_t Ualpha_beta;
+    Park_dq_t Uqd;
 
-typedef struct
-{
+    float angle_el;
+    float bus_Voltage;
+    uint32_t wave_period;
+
+} FOC_PWM_t;
+
+typedef struct {
     float target_freq;
     float current_freq;
 
-}FOC_VF_t;
+} FOC_VF_t;
 
-
-extern Bsp_encoder_t   *g_enc;
-extern float            vofa_floatdata[4];
+extern Bsp_encoder_t *g_enc;
+extern float vofa_floatdata[4];
 
 Clarke_ab_t FOC_Clarke(PhaseCurrents_t *pParam);
 
@@ -73,15 +67,4 @@ void FOC_Init(void);
 
 void FOC_Run_SVPWM(FOC_PWM_t *pFOC_PWM);
 
-
-
-
-
-
-
-
-
-
-
 #endif
-

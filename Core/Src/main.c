@@ -21,9 +21,11 @@
 #include "adc.h"
 #include "gpio.h"
 #include "spi.h"
-#include "stm32f4xx_hal.h"
+#include "stm32f407xx.h"
+#include "stm32f4xx_hal_gpio.h"
 #include "tim.h"
 #include "usart.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -54,13 +56,13 @@
 // bsp_encoder_t *g_enc;
 
 float mech_angle, elec_angle, speed;
-FOC_PWM_t        FOC_PWM;
+FOC_PWM_t FOC_PWM;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void USB_Reconnection(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -75,8 +77,8 @@ void SystemClock_Config(void);
 int main(void) {
 
     /* USER CODE BEGIN 1 */
-    float elec_angle = 0.0f;                     // 电角度 (rad)
-    float elec_freq = 5.0f;                      // 目标电频率 (Hz)，决定转速
+    float elec_angle = 0.0f; // 电角度 (rad)
+    float elec_freq = 5.0f;  // 目标电频率 (Hz)，决定转速
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -100,17 +102,22 @@ int main(void) {
     MX_TIM1_Init();
     MX_USART1_UART_Init();
     MX_ADC3_Init();
-    // MX_SPI1_Init();
+    MX_SPI1_Init();
     MX_TIM7_Init();
+    
     /* USER CODE BEGIN 2 */
+    USB_Reconnection(); 
+    MX_USB_DEVICE_Init();
+    
     Board_DWT_Init();
     FOC_Init();
     HAL_Delay(200);
+
     uint32_t last_tick = DWT->CYCCNT;
     float dt;
     // FOC_Align_Zero();
     // FOC_Start_OpenLoop(0.5f);       // 初始Vq = 0.5V，慢慢加
-    
+
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -122,7 +129,7 @@ int main(void) {
         // if (elec_angle < 0.0f) elec_angle += 6.283185307f;
         // FOC_PWM.angle_el = elec_angle;
         // FOC_PWM.Uqd.d    = 0.0f;
-        // FOC_PWM.Uqd.q    = 1.2f; 
+        // FOC_PWM.Uqd.q    = 1.2f;
         // FOC_PWM.bus_Voltage  = 12.0f;
         // FOC_PWM.wave_period  = 5250;
 
@@ -158,7 +165,7 @@ void SystemClock_Config(void) {
     RCC_OscInitStruct.PLL.PLLM = 4;
     RCC_OscInitStruct.PLL.PLLN = 168;
     RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = 4;
+    RCC_OscInitStruct.PLL.PLLQ = 7;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
@@ -178,6 +185,26 @@ void SystemClock_Config(void) {
 
 /* USER CODE BEGIN 4 */
 
+/*用在MX_USB_DEVICE_Init函数前，方便主机重新识别USB*/
+void USB_Reconnection(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  // 1. 配置 PA12 (USB_D+) 为推挽输出，初始拉低
+  GPIO_InitStruct.Pin = GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;     // 确保默认是低电平
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  // 2. 将 D+ 拉低约 50ms，模拟断开连接
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_Delay(50);                             // 50ms 足够主机检测到断开
+
+  // 3. 释放 D+，外部 1.5kΩ 上拉电阻会将其拉高，模拟重新连接
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_SET);
+  HAL_Delay(50);                             // 等待主机识别新设备
+}
 /* USER CODE END 4 */
 
 /**
